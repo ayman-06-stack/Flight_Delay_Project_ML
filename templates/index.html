@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Delay Predictor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 36px;
+            width: 100%;
+            max-width: 640px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1a1a2e;
+        }
+
+        p.sub {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 14px;
+            background: #6366f1;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4f46e5;
+        }
+
+        button:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 28px;
+            padding: 24px;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn .3s ease;
+        }
+
+        .result.heure {
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+        }
+
+        .result.retard {
+            background: #fff7ed;
+            border: 1px solid #fcd34d;
+        }
+
+        .result.eleve {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .verdict {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .heure .verdict {
+            color: #059669;
+        }
+
+        .retard .verdict {
+            color: #d97706;
+        }
+
+        .eleve .verdict {
+            color: #dc2626;
+        }
+
+        .prob-bar {
+            background: #e5e7eb;
+            border-radius: 99px;
+            height: 10px;
+            margin: 8px 0 16px;
+            overflow: hidden;
+        }
+
+        .prob-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width .6s ease;
+        }
+
+        .heure .prob-fill {
+            background: #10b981;
+        }
+
+        .retard .prob-fill {
+            background: #f59e0b;
+        }
+
+        .eleve .prob-fill {
+            background: #ef4444;
+        }
+
+        .meta {
+            font-size: 13px;
+            color: #6b7280;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .meta span {
+            background: #f3f4f6;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #dc2626;
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <img src="../static/logo.png" alt="Flight Delay Logo" style="width: 120px; height: auto;">
+        </div>
+        <h1 style="text-align: center;">Flight Delay Predictor</h1>
+        <p class="sub" align="center">Prédiction des retards de vols — Projet Machine Learning · XGBoost</p>
+
+        <div class="grid">
+            <div>
+                <label>Mois</label>
+                <select id="MONTH">
+                    <option value="1">Janvier</option>
+                    <option value="2">Février</option>
+                    <option value="3">Mars</option>
+                    <option value="4">Avril</option>
+                    <option value="5">Mai</option>
+                    <option value="6" selected>Juin</option>
+                    <option value="7">Juillet</option>
+                    <option value="8">Août</option>
+                    <option value="9">Septembre</option>
+                    <option value="10">Octobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Décembre</option>
+                </select>
+            </div>
+            <div>
+                <label>Jour de la semaine</label>
+                <select id="DAY_OF_WEEK">
+                    <option value="1">Lundi</option>
+                    <option value="2">Mardi</option>
+                    <option value="3">Mercredi</option>
+                    <option value="4">Jeudi</option>
+                    <option value="5" selected>Vendredi</option>
+                    <option value="6">Samedi</option>
+                    <option value="7">Dimanche</option>
+                </select>
+            </div>
+            <div>
+                <label>Compagnie aérienne</label>
+                <select id="AIRLINE">
+                    <option value="NK">NK — Spirit Airlines</option>
+                    <option value="UA">UA — United Airlines</option>
+                    <option value="F9">F9 — Frontier Airlines</option>
+                    <option value="WN">WN — Southwest Airlines</option>
+                    <option value="B6">B6 — JetBlue</option>
+                    <option value="AA">AA — American Airlines</option>
+                    <option value="DL" selected>DL — Delta Airlines</option>
+                    <option value="AS">AS — Alaska Airlines</option>
+                    <option value="HA">HA — Hawaiian Airlines</option>
+                </select>
+            </div>
+            <div>
+                <label>Heure de départ (ex: 1430)</label>
+                <input type="number" id="SCHEDULED_DEPARTURE" value="1430" min="0" max="2359">
+            </div>
+            <div>
+                <label>Aéroport de départ</label>
+                <select id="ORIGIN_AIRPORT">
+                    <option value="ORD">ORD — Chicago O'Hare</option>
+                    <option value="EWR">EWR — Newark</option>
+                    <option value="SFO">SFO — San Francisco</option>
+                    <option value="JFK">JFK — New York JFK</option>
+                    <option value="LAX" selected>LAX — Los Angeles</option>
+                    <option value="ATL">ATL — Atlanta</option>
+                    <option value="DFW">DFW — Dallas</option>
+                    <option value="BOS">BOS — Boston</option>
+                    <option value="MIA">MIA — Miami</option>
+                    <option value="DEN">DEN — Denver</option>
+                </select>
+            </div>
+            <div>
+                <label>Aéroport d'arrivée</label>
+                <select id="DESTINATION_AIRPORT">
+                    <option value="JFK" selected>JFK — New York JFK</option>
+                    <option value="LAX">LAX — Los Angeles</option>
+                    <option value="ORD">ORD — Chicago O'Hare</option>
+                    <option value="ATL">ATL — Atlanta</option>
+                    <option value="SFO">SFO — San Francisco</option>
+                    <option value="DFW">DFW — Dallas</option>
+                    <option value="MIA">MIA — Miami</option>
+                    <option value="BOS">BOS — Boston</option>
+                    <option value="DEN">DEN — Denver</option>
+                    <option value="SEA">SEA — Seattle</option>
+                </select>
+            </div>
+            <div>
+                <label>Distance (miles)</label>
+                <input type="number" id="DISTANCE" value="2475" min="1">
+            </div>
+            <div>
+                <label>Durée prévue (minutes)</label>
+                <input type="number" id="SCHEDULED_TIME" value="320" min="1">
+            </div>
+        </div>
+
+        <button id="btn" onclick="predict()">Prédire le retard</button>
+
+        <div class="result" id="result">
+            <div class="verdict" id="verdict"></div>
+            <div style="font-size:13px; color:#6b7280; margin-bottom:6px">
+                Probabilité de retard : <strong id="prob-txt"></strong>
+            </div>
+            <div class="prob-bar">
+                <div class="prob-fill" id="prob-fill"></div>
+            </div>
+            <div class="meta" id="meta"></div>
+        </div>
+        <div class="error" id="error" style="display:none"></div>
+    </div>
+
+    <script>
+        async function predict() {
+            const btn = document.getElementById('btn');
+            btn.disabled = true;
+            btn.textContent = 'Calcul en cours...';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+
+            const payload = {
+                MONTH: parseInt(document.getElementById('MONTH').value),
+                DAY_OF_WEEK: parseInt(document.getElementById('DAY_OF_WEEK').value),
+                AIRLINE: document.getElementById('AIRLINE').value,
+                ORIGIN_AIRPORT: document.getElementById('ORIGIN_AIRPORT').value,
+                DESTINATION_AIRPORT: document.getElementById('DESTINATION_AIRPORT').value,
+                SCHEDULED_DEPARTURE: parseInt(document.getElementById('SCHEDULED_DEPARTURE').value),
+                DISTANCE: parseFloat(document.getElementById('DISTANCE').value),
+                SCHEDULED_TIME: parseFloat(document.getElementById('SCHEDULED_TIME').value),
+                TAXI_OUT: 15.0
+            };
+
+            try {
+                const resp = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error(`Erreur serveur: ${resp.status}`);
+                const data = await resp.json();
+
+                const resultDiv = document.getElementById('result');
+                const pct = Math.round(data.probabilite_retard * 100);
+
+                resultDiv.className = 'result ' +
+                    (data.niveau_risque === 'Faible' ? 'heure' :
+                        data.niveau_risque === 'Élevé' ? 'eleve' : 'retard');
+
+                document.getElementById('verdict').textContent =
+                    (data.prediction === 0 ? '✓ À l\'heure' : '⚠ En retard') +
+                    '  —  Risque ' + data.niveau_risque;
+
+                document.getElementById('prob-txt').textContent = pct + '%';
+                document.getElementById('prob-fill').style.width = pct + '%';
+
+                document.getElementById('meta').innerHTML =
+                    `<span>Compagnie : ${data.details.compagnie}</span>` +
+                    `<span>Trajet : ${data.details.trajet}</span>` +
+                    `<span>Départ : ${data.details.heure_depart}</span>` +
+                    `<span>Distance : ${data.details.distance_miles} mi</span>`;
+
+                resultDiv.style.display = 'block';
+            } catch (e) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Erreur : ' + e.message;
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Prédire le retard';
+        }
+    </script>
+</body>
+
+</html>

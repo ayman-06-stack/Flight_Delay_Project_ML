@@ -1,0 +1,13 @@
+[0511/133614.537:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/133615.543:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:869] not connected
+[0511/133615.859:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/133618.479:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:869] not connected
+[0511/133620.237:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/133625.776:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:869] not connected
+[0511/133626.094:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/133630.815:ERROR:third_party\crashpad\crashpad\client\crashpad_client_win.cc:869] not connected
+[0511/133631.680:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/134347.957:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:136] TransactNamedPipe: Le canal de communication a été fermé. (0x6D)
+[0511/134502.663:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0511/191003.754:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)
+[0515/104558.290:ERROR:third_party\crashpad\crashpad\util\win\registration_protocol_win.cc:108] CreateFile: Le fichier spécifié est introuvable. (0x2)

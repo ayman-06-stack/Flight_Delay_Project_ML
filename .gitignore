@@ -1,0 +1,9 @@
+/data
+/_pycache_
+/api/_pycache_
+data_features.csv
+data_nettoyee.csv
+/models/model_logistic.pkl
+/models/model_rf.pkl
+/models/model_xgb.pkl
+/models/scaler.pkl

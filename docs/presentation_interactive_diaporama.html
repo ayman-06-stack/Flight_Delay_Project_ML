@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Prédiction des Retards de Vols Commerciaux</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+  <style>
+    /* Theme Sombre & Moderne basé sur les contraintes */
+    :root {
+      --bg-color: #0D1B2A;
+      --accent-color: #00B4D8;
+      --text-color: #E0E1DD;
+      --box-bg: rgba(27, 38, 59, 0.8);
+    }
+    body {
+      background-color: var(--bg-color);
+    }
+    .reveal {
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      color: var(--accent-color);
+      text-transform: none;
+      font-weight: 600;
+    }
+    .reveal h1 { font-size: 2.2em; line-height: 1.2; }
+    .reveal h2 { 
+      font-size: 1.5em; 
+      border-bottom: 2px solid var(--accent-color); 
+      padding-bottom: 10px; 
+      margin-bottom: 30px; 
+    }
+    .reveal .progress span {
+      background-color: var(--accent-color);
+    }
+    .reveal .controls {
+      color: var(--accent-color);
+    }
+    .reveal ul {
+      display: block;
+      margin-left: 5%;
+    }
+    .reveal li {
+      margin-bottom: 12px;
+      font-size: 0.85em;
+    }
+    .reveal li li {
+      font-size: 0.9em;
+      color: #A9B0B7;
+      margin-top: 5px;
+    }
+    .math-box {
+      background-color: var(--box-bg);
+      border-left: 5px solid var(--accent-color);
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 6px;
+      font-size: 0.85em;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .accent {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+    .title-slide h1 {
+      margin-bottom: 30px;
+    }
+    .title-slide h3 {
+      color: #778DA9;
+      font-weight: 400;
+      font-size: 1.2em;
+    }
+    .chart-placeholder {
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(45deg, #1B263B, #0D1B2A);
+      border: 1px dashed var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      margin-top: 20px;
+      color: var(--accent-color);
+      font-style: italic;
+      font-size: 0.8em;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1 : Titre -->
+      <section class="title-slide">
+        <h1>Prédiction des Retards<br>de Vols Commerciaux</h1>
+        <h3>Classification Binaire — Apprentissage Supervisé<br>Déploiement FastAPI</h3>
+        <p style="margin-top: 60px; font-size: 0.7em; color: #415A77;">Soutenance de Projet Machine Learning</p>
+      </section>
+
+      <!-- Slide 2 : Intro -->
+      <section style="text-align: left;">
+        <h2>1. Introduction & Contexte Projet</h2>
+        <ul>
+          <li><span class="accent">Présentation du projet et objectifs métier</span>
+            <ul>
+              <li>Anticiper les retards pour optimiser les opérations aéroportuaires.</li>
+              <li>Améliorer l'expérience passager et fluidifier la gestion des correspondances.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Problématique : Enjeux socio-économiques</span>
+            <ul>
+              <li>Coûts financiers massifs pour les compagnies aériennes.</li>
+              <li>Impact écologique fort (attentes en vol) et insatisfaction client.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Cadrage technique</span>
+            <ul>
+              <li><strong>Apprentissage supervisé :</strong> Exploitation de l'historique des vols.</li>
+              <li><strong>Classification binaire :</strong> Vol à l'heure (0) vs Vol en retard (1).</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 3 : ETL -->
+      <section style="text-align: left;">
+        <h2>2. Analyse & Préparation des Données</h2>
+        <ul>
+          <li><span class="accent">Analyse Exploratoire (EDA)</span>
+            <ul>
+              <li>Corrélations et statistiques descriptives pour cerner les variables influentes.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Nettoyage & Outliers</span>
+            <ul>
+              <li>Traitement des valeurs manquantes et élimination rigoureuse des valeurs aberrantes à l'aide du <strong>Z-Score</strong> :</li>
+            </ul>
+            <div class="math-box">
+              $$ Z = \frac{x - \mu}{\sigma} $$
+            </div>
+          </li>
+          <li><span class="accent">Focus Sécurité : Data Leakage</span>
+            <ul>
+              <li>Identification et retrait des variables post-vol connues uniquement <i>après</i> l'atterrissage (ex: durée du retard, raisons météo confirmées).</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 4 : Feature Engineering -->
+      <section style="text-align: left;">
+        <h2>3. Feature Engineering</h2>
+        <ul>
+          <li><span class="accent">Encodage cyclique des variables temporelles</span>
+            <ul>
+              <li>Conservation de la continuité temporelle (heures, mois) par les fonctions Sin/Cos :</li>
+            </ul>
+            <div class="math-box">
+              $$ x_{sin} = \sin\left(\frac{2\pi \times x}{\max}\right) \quad \text{et} \quad x_{cos} = \cos\left(\frac{2\pi \times x}{\max}\right) $$
+            </div>
+          </li>
+          <li><span class="accent">Enrichissement (Variables métier)</span>
+            <ul>
+              <li>Ajout d'indicateurs de saisonnalité et de week-ends.</li>
+              <li><strong>Target Encoding</strong> pour réduire la cardinalité des variables géographiques (aéroports).</li>
+            </ul>
+          </li>
+          <li><span class="accent">Transformation : Standardisation</span>
+            <div class="math-box">
+              $$ x' = \frac{x - \mu}{\sigma} $$
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 5 : Modèles -->
+      <section style="text-align: left;">
+        <h2>4. Architecture des Modèles</h2>
+        <div style="font-size: 0.9em;">
+          <ul>
+            <li><span class="accent">Baseline : Régression Logistique</span>
+              <div class="math-box" style="padding: 10px; margin: 10px 0;">
+                Sigmoïde : $$ \sigma(z) = \frac{1}{1 + e^{-z}} $$
+                Fonction de coût (Log-Loss) : $$ \mathcal{L} = - \frac{1}{N} \sum_{i=1}^{N} \left[ y_i \log(\hat{y}_i) + (1-y_i) \log(1-\hat{y}_i) \right] $$
+              </div>
+            </li>
+            <li><span class="accent">Approche Ensemble (Bagging) : Random Forest</span>
+              <div class="math-box" style="padding: 10px; margin: 10px 0;">
+                Impureté de Gini : $$ Gini = 1 - \sum_{k=1}^{K} p_k^2 $$
+              </div>
+            </li>
+            <li><span class="accent">Approche Séquentielle (Boosting) : XGBoost</span>
+              <div class="math-box" style="padding: 10px; margin: 10px 0;">
+                Mise à jour : $$ \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + f_t(x_i) $$
+                Régularisation : $$ \Omega(f) = \gamma T + \frac{1}{2}\lambda \sum_{j=1}^{T} w_j^2 $$
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 6 : Entraînement -->
+      <section style="text-align: left;">
+        <h2>5. Stratégie d'Entraînement et Validation</h2>
+        <ul>
+          <li><span class="accent">Séparation stratifiée (80/20)</span>
+            <ul>
+              <li>Prise en charge du <strong>déséquilibre de classes</strong> en maintenant la proportion exacte de vols en retard dans les sets d'entraînement et de test.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Optimisation des hyperparamètres</span>
+            <ul>
+              <li>Tuning minutieux du <code>Learning Rate</code>, de la profondeur maximale des arbres, et des pénalités de régularisation.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Validation croisée K-Fold</span>
+            <ul>
+              <li>Entraînement sur K sous-ensembles (Folds) pour attester de la généralisation du modèle.</li>
+              <li>Lutte active contre le surapprentissage (Overfitting).</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 7 : Evaluation -->
+      <section style="text-align: left;">
+        <h2>6. Évaluation Multicritères</h2>
+        <div class="metric-grid">
+          <div>
+            <ul>
+              <li><span class="accent">Analyse des métriques</span>
+                <div class="math-box" style="font-size: 0.7em; margin: 10px 0; padding: 10px;">
+                  $$ \text{Acc} = \frac{TP + TN}{TP+TN+FP+FN} \quad \text{Prec} = \frac{TP}{TP+FP} $$
+                  <br>
+                  $$ \text{Rec} = \frac{TP}{TP+FN} \quad F1 = 2 \times \frac{\text{Prec} \times \text{Rec}}{\text{Prec} + \text{Rec}} $$
+                </div>
+                <p style="font-size: 0.7em; margin-top: 5px;"><em>Pourquoi F1 et AUC ?</em> En milieu déséquilibré, l'Accuracy est trompeuse.</p>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <ul>
+              <li><span class="accent">Interprétation : Comparatif</span>
+                <ul>
+                  <li>LogReg : F1 = <strong>0.72</strong></li>
+                  <li>XGBoost : F1 = <strong class="accent" style="font-size: 1.2em;">0.84</strong></li>
+                </ul>
+              </li>
+              <li><span class="accent">Analyse d'erreurs</span>
+                <ul>
+                  <li>Matrices de confusion : Réduction drastique des Faux Négatifs avec XGBoost.</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="chart-placeholder">
+          [ Espace pour l'intégration de votre Graphique : Courbes ROC - LogReg vs XGBoost ]
+        </div>
+      </section>
+
+      <!-- Slide 8 : Déploiement -->
+      <section style="text-align: left;">
+        <h2>7. Industrialisation & Déploiement</h2>
+        <ul>
+          <li><span class="accent">Architecture de l'API : FastAPI</span>
+            <ul>
+              <li>Hautes performances d'exécution (Asynchrone).</li>
+              <li>Validation stricte des contrats de données en entrée via <strong>Pydantic</strong>.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Design Pattern : Singleton</span>
+            <ul>
+              <li>Implémentation de la classe <code>FlightDelayPredictor</code>.</li>
+              <li>Chargement unique du modèle en mémoire : élimination du délai de "Cold Start".</li>
+            </ul>
+          </li>
+          <li><span class="accent">Interface & Inférence</span>
+            <ul>
+              <li>Endpoint <code>/predict</code> : Prédiction unitaire pour des requêtes temps réel.</li>
+              <li>Endpoint <code>/predict_batch</code> : Inférence par lot pour analyser des plannings complets.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Slide 9 : Conclusion -->
+      <section style="text-align: left;">
+        <h2>8. Conclusion & Perspectives</h2>
+        <ul>
+          <li><span class="accent">Synthèse et limites actuelles</span>
+            <ul>
+              <li>Développement maîtrisé du pipeline ETL jusqu'au déploiement de l'API.</li>
+              <li>Excellente capacité de XGBoost à capter les signaux faibles temporels.</li>
+              <li><strong>Limites :</strong> Le modèle dépend fortement de facteurs météorologiques externes, impossibles à prédire avec certitude longtemps à l'avance.</li>
+            </ul>
+          </li>
+          <li><span class="accent">Pistes d'amélioration</span>
+            <ul>
+              <li><strong>Données Temps Réel :</strong> Intégration d'API météorologiques et trafic aérien.</li>
+              <li><strong>Architecture MLOps :</strong> Mise en place d'une surveillance de la dérive des données (Model Drift) et d'un pipeline de ré-entraînement automatique.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      controls: true,
+      progress: true,
+      center: false,
+      transition: 'slide',
+      plugins: [ RevealMath.KaTeX ]
+    });
+  </script>
+</body>
+</html>
